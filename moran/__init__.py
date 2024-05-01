@@ -1,7 +1,9 @@
 import logging.config
 import os
+from urllib.parse import urlencode
+
 import requests
-from flask import Flask
+from flask import Flask, request
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
@@ -32,10 +34,13 @@ def create_app(test_config=None):
     except OSError:
         pass
 
-    @app.route('/data', methods=['GET'])
+    @app.route('/data', methods=['POST'])
     def fetch():
+        request_data = request.json
+        request_data['Key'] = API_KEY
+        query_string = urlencode(request_data)
         data = requests.get(
-            f'http://moran.mot.gov.il:110/Channels/HTTPChannel/SmQuery/2.8/json?Key={API_KEY}&MonitoringRef=32902')
+            f'http://moran.mot.gov.il:110/Channels/HTTPChannel/SmQuery/2.8/json?{query_string}')
         return {"data": data.json()}
 
     return app
